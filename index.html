@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>Sliding Puzzle Game</title>
+
+  <style>
+
+    body {
+
+      font-family: Arial, sans-serif;
+
+      text-align: center;
+
+    }
+
+    #puzzle {
+
+      margin: 20px auto;
+
+      width: 400px;
+
+      height: 400px;
+
+      border: 2px solid #333;
+
+      position: relative;
+
+    }
+
+    .tile {
+
+      box-sizing: border-box;
+
+      width: 100px;
+
+      height: 100px;
+
+      border: 1px solid #999;
+
+      position: absolute;
+
+      background-size: 400px 400px;
+
+      cursor: pointer;
+
+      transition: 0.3s;
+
+    }
+
+    #controls {
+
+      margin-top: 20px;
+
+    }
+
+    button {
+
+      padding: 10px 15px;
+
+      font-size: 16px;
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <h1>Sliding Puzzle Game</h1>
+
+  <div id="puzzle"></div>
+
+  <div id="controls">
+
+    <button onclick="shuffleTiles()">Shuffle</button>
+
+  </div>
+
+  <script>
+
+    const IMAGE_URL = 'https://via.placeholder.com/400'; // Replace with your image URL
+
+    const PUZZLE_SIZE = 4; // 4x4 puzzle
+
+    const TILE_SIZE = 100; // in pixels
+
+    let tiles = [];
+
+    let emptyPosition = { x: PUZZLE_SIZE -1, y: PUZZLE_SIZE -1 };
+
+    function init() {
+
+      const puzzle = document.getElementById('puzzle');
+
+      puzzle.innerHTML = '';
+
+      tiles = [];
+
+      for(let y = 0; y < PUZZLE_SIZE; y++) {
+
+        for(let x = 0; x < PUZZLE_SIZE; x++) {
+
+          if(x === PUZZLE_SIZE -1 && y === PUZZLE_SIZE -1) continue; // Skip the last tile
+
+          const tile = document.createElement('div');
+
+          tile.classList.add('tile');
+
+          tile.style.left = `${x * TILE_SIZE}px`;
+
+          tile.style.top = `${y * TILE_SIZE}px`;
+
+          tile.style.backgroundImage = `url(${IMAGE_URL})`;
+
+          tile.style.backgroundPosition = `-${x * TILE_SIZE}px -${y * TILE_SIZE}px`;
+
+          tile.setAttribute('data-x', x);
+
+          tile.setAttribute('data-y', y);
+
+          tile.addEventListener('click', () => {
+
+            moveTile(x, y);
+
+          });
+
+          puzzle.appendChild(tile);
+
+          tiles.push({element: tile, x: x, y: y});
+
+        }
+
+      }
+
+    }
+
+    function shuffleTiles() {
+
+      for(let i = 0; i < 1000; i++) {
+
+        const neighbors = getNeighbors(emptyPosition.x, emptyPosition.y);
+
+        const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+
+        moveTile(randomNeighbor.x, randomNeighbor.y, false);
+
+      }
+
+    }
+
+    function getNeighbors(x, y) {
+
+      const neighbors = [];
+
+      if(x > 0) neighbors.push({x: x -1, y: y});
+
+      if(x < PUZZLE_SIZE -1) neighbors.push({x: x +1, y: y});
+
+      if(y > 0) neighbors.push({x: x, y: y -1});
+
+      if(y < PUZZLE_SIZE -1) neighbors.push({x: x, y: y +1});
+
+      return neighbors;
+
+    }
+
+    function moveTile(x, y, checkWin = true) {
+
+      if((Math.abs(emptyPosition.x - x) + Math.abs(emptyPosition.y - y)) === 1) {
+
+        const tile = tiles.find(t => t.x === x && t.y === y);
+
+        tile.element.style.left = `${emptyPosition.x * TILE_SIZE}px`;
+
+        tile.element.style.top = `${emptyPosition.y * TILE_SIZE}px`;
+
+        tile.x = emptyPosition.x;
+
+        tile.y = emptyPosition.y;
+
+        emptyPosition.x = x;
+
+        emptyPosition.y = y;
+
+        if(checkWin) checkIfSolved();
+
+      }
+
+    }
+
+    function checkIfSolved() {
+
+      let isSolved = true;
+
+      for(const tile of tiles) {
+
+        const originalX = parseInt(tile.element.getAttribute('data-x'));
+
+        const originalY = parseInt(tile.element.getAttribute('data-y'));
+
+        if(tile.x !== originalX || tile.y !== originalY) {
+
+          isSolved = false;
+
+          break;
+
+        }
+
+      }
+
+      if(isSolved) {
+
+        setTimeout(() => {
+
+          alert('Congratulations! You solved the puzzle!');
+
+        }, 300);
+
+      }
+
+    }
+
+    window.onload = init;
+
+  </script>
+
+</body>
+
+</html>
